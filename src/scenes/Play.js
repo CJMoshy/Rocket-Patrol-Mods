@@ -7,12 +7,13 @@
     var p1turn = true
     var showPlayerText = true
     var shipArr = []
+    var interval_id
 
     let scoreConfig = {
         fontFamily: 'Courier',
         fontSize : '28px',
-        backgroundColor : '#F3B141',
-        color : '#843605',
+        backgroundColor : '#0000FF',
+        color : '#000000',
         align : 'right', 
         padding : {top : 5, bottom : 5},
         fixedWidth : 0
@@ -35,7 +36,7 @@ class Play extends Phaser.Scene {
         this.starfield = this.add.tileSprite(0, 0, 640, 480, 'starfield').setOrigin(0,0)
 
         //green UI background
-        this.add.rectangle(0, borderUISize + borderPadding, game.config.width, borderUISize * 2, 0x00FF00).setOrigin(0,0)
+        this.add.rectangle(0, borderUISize + borderPadding, game.config.width, borderUISize * 2, 0xFF0000).setOrigin(0,0)
 
         //white borders
         this.add.rectangle(0, 0, game.config.width, borderUISize, 0xFFFFFF).setOrigin(0, 0)
@@ -47,11 +48,12 @@ class Play extends Phaser.Scene {
         this.p1Rocket = new Rocket(this, game.config.width / 2, game.config.height - borderUISize - borderPadding, 'rocket').setOrigin(0.5, 0)
 
         //add spaceships (x4) MOD
-        this.ship_01 = new Spaceship(this, game.config.width + borderUISize * 6, borderUISize * 4, 'spaceship', 0, 30).setOrigin(0, 0)
-        this.ship_02 = new Spaceship(this, game.config.width + borderUISize * 3, borderUISize*5 + borderPadding*2, 'spaceship', 0, 20).setOrigin(0, 0)
-        this.ship_03 = new Spaceship(this, game.config.width, borderUISize*6 + borderPadding*4, 'spaceship', 0, 10).setOrigin(0, 0)
-        this.ship_04 = new Spaceship(this, game.config.width, borderUISize*8 + borderPadding*4, 'alien', 0, 40, 4.5).setOrigin(0, 0)
+        this.ship_01 = new Spaceship(this, game.config.width, borderUISize*8 + borderPadding*4, 'spaceship', 0, 10).setOrigin(0, 0) //bottom ship
+        this.ship_02 = new Spaceship(this, game.config.width + borderUISize * 3, borderUISize*5 + borderPadding*2, 'spaceship', 0, 30).setOrigin(0, 0)
+        this.ship_03 = new Spaceship(this, game.config.width, borderUISize*6 + borderPadding*4, 'spaceship', 0, 20).setOrigin(0, 0)
+        this.ship_04 = new Spaceship(this, game.config.width + borderUISize * 6, borderUISize * 4, 'alien', 0, 40, 4.5).setOrigin(0, 0)
 
+ 
         //encapsulate ships in arr for easy modification of all
         shipArr.push(this.ship_01)
         shipArr.push(this.ship_02)
@@ -63,13 +65,12 @@ class Play extends Phaser.Scene {
         keyRESET = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R)
         keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT)
         keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT)
-        keyStart = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X)
+        keyStart = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X) // use x to return to menu and start instead of arrow keys
 
         //text on screen
         this.timeLeft = game.settings.gameTimer / 1000
         this.timeLeftTxt = this.add.text(game.config.width - borderUISize - borderPadding,game.config.height - borderUISize - borderPadding, this.timeLeft + 's', scoreConfig).setOrigin(1)
         this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding * 2, 'Score: ' + this.p1Score, scoreConfig)
-
         this.highScoreTxt = this.add.text(game.config.width - borderUISize - borderPadding, borderUISize + borderPadding * 2, 'High Score: ' + highScore.hs + '(' + (highScore.isp1 == true ? 'p1' : 'p2') + ')', scoreConfig).setOrigin(1,0)
 
         //conditional text
@@ -79,13 +80,14 @@ class Play extends Phaser.Scene {
         }
     }
 
-    update() {
+    update() {  
         
         if(this.canPressX && this.gameOver && Phaser.Input.Keyboard.JustDown(keyStart)){
             this.gameOver = !this.gameOver
             this.canPressX = false
             this.startTimer()
         }
+
         //check for input to restart
         if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyRESET)){ 
             if(this.p1Score > highScore.hs){
@@ -97,7 +99,7 @@ class Play extends Phaser.Scene {
             this.scene.restart()
         }
 
-        if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyLEFT)){
+        if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyStart)){
             this.scene.start('menuScene')
         }
 
@@ -117,7 +119,7 @@ class Play extends Phaser.Scene {
         shipArr.forEach(element => {
             if(this.checkCollision(this.p1Rocket, element)){
                 this.p1Rocket.reset()
-                this.doParty(element)
+                this.emitParticles(element)
                 this.shipExplode(element)
             }
         });
@@ -151,28 +153,20 @@ class Play extends Phaser.Scene {
         this.sound.play('sfx-explosion')
     }
 
-    doParty(ship){
+    emitParticles(ship){
         const emitter = this.add.particles(ship.x, ship.y, 'spark', {
-            lifespan: 4000,
-            speed: { min: 150, max: 250 },
+            lifespan: 6000,
+            speed: { min: 300, max: 350 },
             scale: { start: 0.8, end: 0 },
-            gravityY: 150,
-            blendMode: 'ADD',
+            gravityY: 100,
             emitting: false
         });
-        emitter.explode(20)
+        emitter.explode(25)
     }
 
     startTimer(){
-            //in game timer
-            var interval_id = setInterval( () => {
-                this.timeLeft = this.timeLeft - 1
-                this.timeLeftTxt.text = this.timeLeft + 's'
-                if(this.timeLeft <= 0){
-                    clearInterval(interval_id)
-                }
-            }, 1000)
-         
+            //game clock
+            interval_id = setInterval(() => this.updateTimer(), 1000)
             //speed increase after 30 sec TODO : change to 30000 ms
             this.clock = this.time.delayedCall(30000, () => {
                 shipArr.forEach(element => {
@@ -182,11 +176,17 @@ class Play extends Phaser.Scene {
 
             //set a 60sec play clock
             this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
+                clearInterval(interval_id)
                 this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5)
-                this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ← for Menu', scoreConfig).setOrigin(0.5)
+                this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or (X) for Menu', scoreConfig).setOrigin(0.5)
                 this.gameOver = true
             }, null, this)
-        
     }
+
+    updateTimer(){
+        this.timeLeft = this.timeLeft - 1
+        this.timeLeftTxt.text = this.timeLeft + 's'
+    }
+
 }
 
