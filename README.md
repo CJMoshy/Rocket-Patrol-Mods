@@ -1,10 +1,6 @@
 //Created by CJ Moshy for UCSC CMPM 120
-<<<<<<< HEAD
 
-# Rocket Patrol Clone
-=======
 # Modded Rocket Patrol
->>>>>>> 91ac03052ee0b62009fe43742208f46010643875
 
 This is my modified version of Rocket Patrol, done using Phaser3
 
