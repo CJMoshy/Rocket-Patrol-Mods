@@ -71,7 +71,7 @@ class Play extends Phaser.Scene {
         this.timeLeft = game.settings.gameTimer / 1000
         this.timeLeftTxt = this.add.text(game.config.width - borderUISize - borderPadding,game.config.height - borderUISize - borderPadding, this.timeLeft + 's', scoreConfig).setOrigin(1)
         this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding * 2, 'Score: ' + this.p1Score, scoreConfig)
-        this.highScoreTxt = this.add.text(game.config.width - borderUISize - borderPadding, borderUISize + borderPadding * 2, 'High Score: ' + highScore.hs + '(' + (highScore.isp1 == true ? 'p1' : 'p2') + ')', scoreConfig).setOrigin(1,0)
+        this.highScoreTxt = this.add.text(game.config.width - borderUISize - borderPadding, borderUISize + borderPadding * 2, 'High Score: ' + highScore.hs + '(' + (highScore.isp1 == true ? 'p1' : 'p2') + ')', scoreConfig).setOrigin(1,0) //whos high score?
 
         //conditional text
         if(this.gameOver && showPlayerText){
@@ -82,6 +82,7 @@ class Play extends Phaser.Scene {
 
     update() {  
         
+        //starts each round
         if(this.canPressX && this.gameOver && Phaser.Input.Keyboard.JustDown(keyStart)){
             this.gameOver = !this.gameOver
             this.canPressX = false
@@ -90,11 +91,11 @@ class Play extends Phaser.Scene {
 
         //check for input to restart
         if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyRESET)){ 
-            if(this.p1Score > highScore.hs){
+            if(this.p1Score > highScore.hs){ //persistant score
                 highScore.hs = this.p1Score
                 highScore.isp1 = p1turn
             }
-            p1turn = !p1turn
+            p1turn = !p1turn //2 player mode
             this.canPressX = true
             this.scene.restart()
         }
@@ -119,7 +120,7 @@ class Play extends Phaser.Scene {
         shipArr.forEach(element => {
             if(this.checkCollision(this.p1Rocket, element)){
                 this.p1Rocket.reset()
-                this.emitParticles(element)
+                this.emitParticles(element) //particle explosion
                 this.shipExplode(element)
             }
         });
@@ -148,42 +149,43 @@ class Play extends Phaser.Scene {
             boom.destroy()
         })
         
-        this.p1Score += ship.points
+        this.p1Score += ship.points //update points
         this.scoreLeft.text = 'Score: ' + this.p1Score
         this.sound.play('sfx-explosion')
     }
 
+    //phaser particle emitter
     emitParticles(ship){
-        const emitter = this.add.particles(ship.x, ship.y, 'spark', {
-            lifespan: 6000,
-            speed: { min: 300, max: 350 },
-            scale: { start: 0.8, end: 0 },
+        const emitter = this.add.particles(ship.x, ship.y, 'spark', { //init emitter
+            lifespan: 6000, //how long particles exist
+            speed: { min: 300, max: 350 }, //starting speed / max speed
+            scale: { start: 0.8, end: 0 }, // size of particles
             gravityY: 100,
             emitting: false
         });
-        emitter.explode(25)
+        emitter.explode(25) // emit particles
     }
 
     startTimer(){
-            //game clock
+            //start in game timer
             interval_id = setInterval(() => this.updateTimer(), 1000)
-            //speed increase after 30 sec TODO : change to 30000 ms
+            //speed increase after 30 sec
             this.clock = this.time.delayedCall(30000, () => {
                 shipArr.forEach(element => {
                     element.moveSpeed = element.moveSpeed + 5
                 });
             }, null, this)
 
-            //set a 60sec play clock
+            //set a Xsec play clock based on gamemode
             this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
-                clearInterval(interval_id)
+                clearInterval(interval_id) //stop in game timer
                 this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5)
                 this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or (X) for Menu', scoreConfig).setOrigin(0.5)
                 this.gameOver = true
             }, null, this)
     }
 
-    updateTimer(){
+    updateTimer(){ //visual timer update helper function
         this.timeLeft = this.timeLeft - 1
         this.timeLeftTxt.text = this.timeLeft + 's'
     }

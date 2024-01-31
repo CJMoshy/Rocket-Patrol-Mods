@@ -1,7 +1,8 @@
 //Created by CJ Moshy for UCSC CMPM 120
+
 # Rocket Patrol Clone
 
-Welcome to Rocket Patrol, a classic space-themed shooting game inspired by the retro arcade era. This web-based game is built using JavaScript as a foundational excercise for the Phaser framework.
+This is my modified version of Rocket Patrol, done using Phaser3
 
 ## Table of Contents
 
@@ -12,8 +13,12 @@ Welcome to Rocket Patrol, a classic space-themed shooting game inspired by the r
 
 - Classic space shooter gameplay.
 - Score tracking.
+- persistent high score
+- Two-player mode
+- movable projectile
+- updated particle animation
 - Two difficulties.
-- Audio and visual ques.
+- Audio and visual cues.
 
 ## How to Play
 - Simply navagate to the github local deployment link located on the bottom right of main repository screen

@@ -1,5 +1,14 @@
-// created by cj moshy 1/13/2024
-// cmpm 120
+// CJ Moshy
+// Rocket Patrol: The Universe Expanded
+//5 hours
+//persistant highscore (1pt)
+//speed increase after 30 seconds (1pt)
+//random spaceship movement direction at start of each round (1pt)
+//controlable rocket after fired (1pt)
+//time remaning in seconds on screen (3pts)
+//new enmemy spaceship with new art, smaller, moves faster, worth more points (5pts)
+//alternating 2 player mode (5pts)
+//phasers particle emitter used to make particle explosion on impact (5pts)
 
 let config = {
     type: Phaser.AUTO,
